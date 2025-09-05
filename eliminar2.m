@@ -32,21 +32,3 @@ Ig = rgb2gray(I_segmentada);
 figure();
 imshow(Ig);
 title('Imagen en Escala de Grises');
-
-umbral = 175;  % Ajusta este valor según tu imagen (0-255)
-mascara = Ig < umbral;  % Los círculos oscuros serán 1 (blanco)
-
-% Limpiar ruido pequeño
-mascara = bwareaopen(mascara, 50);  % Elimina objetos menores a 50 píxeles
-
-% Aplicar la máscara para resaltar colonias
-I_resaltado = I_segmentada;
-for canal = 1:3
-    temp = I_segmentada(:,:,canal);
-    temp(~mascara) = temp(~mascara) * 0.3;  % Oscurecer fondo
-    temp(mascara) = min(temp(mascara) * 1.5, 255);  % Resaltar colonias
-    I_resaltado(:,:,canal) = temp;
-end
-
-figure(1)
-imshow(I_resaltado)
