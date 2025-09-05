@@ -32,9 +32,9 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 📞 Contacto
 
-**Tu Nombre** - [tu-email@ejemplo.com](mailto:tu-email@ejemplo.com)
+**Luis Emilio Castellanos Villalobos** - [castellanosvilla007@gmail.com]
 
-Proyecto: [https://github.com/tu-usuario/tu-repositorio](https://github.com/tu-usuario/tu-repositorio)
+Proyecto: [https://github.com/emaiti-ui/Contador UFC]
 
 ---
 
