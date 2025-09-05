@@ -34,7 +34,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **Luis Emilio Castellanos Villalobos** - [castellanosvilla007@gmail.com]
 
-Proyecto: [https://github.com/emaiti-ui/Contador UFC]
+Proyecto: [https://github.com/emaiti-ui/Contador-UFC-]
 
 ---
 
