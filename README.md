@@ -18,10 +18,10 @@ Este proyecto está diseñado para el área de microbiología, con el fin de aut
 
 ## 🧪 Casos de Uso
 
-Laboratorios clínicos: Control de calidad microbiológico
-Industria alimentaria: Análisis de contaminación
-Investigación académica: Estudios de crecimiento microbiano
-Control ambiental: Monitoreo de calidad del agua/aire
+1. Laboratorios clínicos: Control de calidad microbiológico
+2. Industria alimentaria: Análisis de contaminación
+3. Investigación académica: Estudios de crecimiento microbiano
+4. Control ambiental: Monitoreo de calidad del agua/aire
 
 ## 🔬 Metodología
 Algoritmo de procesamiento:
