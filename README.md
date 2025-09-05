@@ -16,6 +16,23 @@ Este proyecto está diseñado para el área de microbiología, con el fin de aut
   - [ ] Statistics and Machine Learning Toolbox
   - [ ] Control System Toolbox
 
+## 🧪 Casos de Uso
+
+1. Laboratorios clínicos: Control de calidad microbiológico
+2. Industria alimentaria: Análisis de contaminación
+3. Investigación académica: Estudios de crecimiento microbiano
+4. Control ambiental: Monitoreo de calidad del agua/aire
+
+## 🔬 Metodología
+Algoritmo de procesamiento:
+
+1. Preprocesamiento: Mejora de contraste y reducción de ruido
+2. Segmentación: Separación de colonias del fondo
+3. Detección: Identificación de regiones de interés
+4. Conteo: Cuantificación automática de UFC
+5. Análisis: Medición de características morfológicas
+
+
 ## 🤝 Contribuir
 
 ¡Las contribuciones son bienvenidas! Por favor:
