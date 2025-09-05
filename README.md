@@ -1,2 +1,46 @@
 # Contador-UFC-
 Este proyecto está diseñado para el área de microbiología, con el fin de automatizar el proceso de analisis microbiologico; agilizando y evitando dependencias de operadores expertos. Usando el Software Matlab para el procesamiento de imágenes digitales
+
+# 🚀 Mi Proyecto MATLAB
+
+[![MATLAB](https://img.shields.io/badge/MATLAB-R2020b+-orange.svg)](https://www.mathworks.com/products/matlab.html)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
+[![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow.svg)]()
+
+
+## 🛠️ Requisitos
+
+- MATLAB R2020b o superior
+- Toolboxes requeridos:
+  - [ ] Signal Processing Toolbox
+  - [ ] Statistics and Machine Learning Toolbox
+  - [ ] Control System Toolbox
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. 🍴 Fork el proyecto
+2. 🌟 Crea una nueva rama (`git checkout -b feature/nueva-funcionalidad`)
+3. 💾 Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. 📤 Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. 🔄 Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 📞 Contacto
+
+**Tu Nombre** - [tu-email@ejemplo.com](mailto:tu-email@ejemplo.com)
+
+Proyecto: [https://github.com/tu-usuario/tu-repositorio](https://github.com/tu-usuario/tu-repositorio)
+
+---
+
+⭐ ¡Si te gustó este proyecto, no olvides darle una estrella en GitHub!
+
+
+<div align="center">
+  <strong>Hecho con ❤️ y MATLAB</strong>
+</div>
