@@ -84,20 +84,13 @@ perimetros = [stats.Perimeter];
 circularidad = 4 * pi * areas ./ (perimetros.^2);
 
 % Identificar colonias válidas (círculos)
-validas = (areas >= 200) & (areas >= 2500) & (circularidad >= 0.4);
+validas = (areas >= 50) & (areas >= 2500) & (circularidad >= 0.1);
 colonias_finales = stats(validas);
 
 % Mostrar imagen con etiquetas
 figure(6);
-imshow(BW);
+imshow(I_segmentada);
 hold on;
-
-% Agregar etiquetas numéricas
-%for i = 1:length(colonias_finales)
-%    centro = colonias_finales(i).Centroid;
-%    text(centro(1), centro(2), num2str(i), 'Color', 'red', ...
-%         'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
-%end
 
 for i = 1:length(colonias_finales)
     centro = colonias_finales(i).Centroid;
