@@ -67,62 +67,53 @@ BW = imbinarize(Im_gris2,0.75);
 figure(4)
 imshow(BW)
 
-% Optimización de la identificación de colonias
-[colonias, numero] = bwlabel(BW);
+% Para colonias muy pegadas
+se_erosion = strel('disk', 3);  % Erosión más fuerte
+BW_erosionado = imerode(BW, se_erosion);
+BW_separado = imdilate(BW_erosionado, strel('disk', 2));  % Dilatación menor
+figure(5)
+imshow(BW_separado)
 
-% Obtener propiedades de todas las regiones
-stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter', 'Eccentricity');
+% etiquetar colonias circulares
+[colonias, ~] = bwlabel(BW_separado);
+stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
 
-% Filtros simples y efectivos
+% Filtros básicos
 areas = [stats.Area];
 perimetros = [stats.Perimeter];
-excentricidades = [stats.Eccentricity];
-
-% Calcular circularidad
 circularidad = 4 * pi * areas ./ (perimetros.^2);
 
-% Filtrar colonias válidas con criterios optimizados
-validas = (areas >= 50) & ...         
-          (areas <= 5000) & ...         
-          (circularidad >= 0.5) & ...   
-          (excentricidades <= 0.8);      
+% Identificar colonias válidas (círculos)
+validas = (areas >= 200) & (areas >= 2500) & (circularidad >= 0.4);
+colonias_finales = stats(validas);
 
-% Aplicar filtros
-stats_validas = stats(validas);
-numero_colonias = sum(validas);
-
-% Eliminar duplicados por proximidad
-if numero_colonias > 1
-    centroides = reshape([stats_validas.Centroid], 2, [])';
-    mantener = true(numero_colonias, 1);
-    
-    for i = 1:numero_colonias-1
-        if mantener(i)
-            distancias = sqrt(sum((centroides(i+1:end,:) - centroides(i,:)).^2, 2));
-            duplicados = find(distancias < 30) + i;  % Distancia mínima 25 píxeles
-            mantener(duplicados) = false;
-        end
-    end
-    
-    stats_finales = stats_validas(mantener);
-    numero_final = sum(mantener);
-else
-    stats_finales = stats_validas;
-    numero_final = numero_colonias;
-end
-
-figure(5)
-imshow(label2rgb(colonias, 'jet', 'k', 'shuffle'));
-title(['Colonias encontradas: ' num2str(numero)]);
-
-% Visualización
+% Mostrar imagen con etiquetas
 figure(6);
-imshow(I_segmentada);
+imshow(BW);
 hold on;
-for i = 1:numero_final
-    centro = stats_finales(i).Centroid;
-    plot(centro(1), centro(2), 'ro', 'MarkerSize', 10, 'LineWidth', 2);
-    text(centro(1)+30, centro(2), num2str(i), 'Color', 'red', 'FontSize', 8);
+
+% Agregar etiquetas numéricas
+%for i = 1:length(colonias_finales)
+%    centro = colonias_finales(i).Centroid;
+%    text(centro(1), centro(2), num2str(i), 'Color', 'red', ...
+%         'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+%end
+
+for i = 1:length(colonias_finales)
+    centro = colonias_finales(i).Centroid;
+    area = colonias_finales(i).Area;
+    radio = sqrt(area / pi);
+    
+    % Crear puntos del círculo
+    theta = linspace(0, 2*pi, 50);
+    x_circulo = centro(1) + radio * cos(theta);
+    y_circulo = centro(2) + radio * sin(theta);
+    
+    % Dibujar círculo y número
+    plot(x_circulo, y_circulo, 'r-', 'LineWidth', 2);
+    text(centro(1) + radio + 10, centro(2), num2str(i), ...
+         'Color', 'red', 'FontSize', 12, 'FontWeight', 'bold');
 end
-title(['Colonias identificadas: ' num2str(numero_final)]);
+
+title(['Total: ' num2str(length(colonias_finales)) ' colonias']);
 hold off;
