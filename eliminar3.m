@@ -67,13 +67,13 @@ BW = imbinarize(Im_gris2,0.75);
 figure(4)
 imshow(BW)
 
-% Para colonias muy pegadas
+%% Para colonias muy pegadas
 se_erosion = strel('disk', 3);  % Erosión más fuerte
 BW_erosionado = imerode(BW, se_erosion);
-BW_separado = imdilate(BW_erosionado, strel('disk', 2));  % Dilatación menor
+BW_separado = imdilate(BW_erosionado, strel('disk', 9));  % Dilatación menor
 figure(5)
 imshow(BW_separado)
-
+%%
 % etiquetar colonias circulares
 [colonias, ~] = bwlabel(BW_separado);
 stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
@@ -84,7 +84,7 @@ perimetros = [stats.Perimeter];
 circularidad = 4 * pi * areas ./ (perimetros.^2);
 
 % Identificar colonias válidas (círculos)
-validas = (areas >= 50) & (areas >= 2500) & (circularidad >= 0.1);
+validas = (areas >= 5) & (areas >= 2500) & (circularidad >= 0);
 colonias_finales = stats(validas);
 
 % Mostrar imagen con etiquetas
