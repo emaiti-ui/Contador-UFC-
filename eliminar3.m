@@ -2,11 +2,12 @@ clear all;
 close all;
 clc;
 
+%% FASE 1: LECTURA Y SEGMENTACIÓN
 Im_color = imread("sp11_img01.jpg");
 
 [alto, ancho, canales] = size(Im_color);
 
-% Crear máscara circular de la Petri
+% Crear máscara circular de la caja Petri
 X = ancho/2;    
 Y = alto/2;     
 R = min(ancho,alto)/2 * 0.85;  
@@ -30,7 +31,9 @@ end
 
 figure(1);
 imshow(I_segmentada);
+title("Imagen Original")
 
+%% FASE 2: CONVERSIÓN A ESCALA DE GRISES Y BINARIZACIÓN
 Ig = rgb2gray(I_segmentada);
 figure(2);
 imshow(Ig);
@@ -55,6 +58,7 @@ end
 
 figure(3)
 imshow(Mask)
+title("Mascara a aplicar")
 
 for y=1:m
     for x=1:n
@@ -66,7 +70,9 @@ Im_gris2 = medfilt2(Im_gris,[7 7]);
 BW = imbinarize(Im_gris2,0.70);
 figure(4)
 imshow(BW)
+title("Imagen Binarizada")
 
+%% FASE 3: IDENTIFICACIÓN Y CONTEO
 % etiquetar colonias circulares
 [colonias, ~] = bwlabel(BW);
 stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
@@ -89,7 +95,7 @@ conteo_ajustado = 0;
 for i = 1:length(colonias_finales)
     area_actual = colonias_finales(i).Area;
     if area_actual > umbral_doble
-        % Círculo superpuesto - contar como 2
+        % Círculo superpuesto -> contar como 2
         num_circulos = round(area_actual / area_promedio);
         conteo_ajustado = conteo_ajustado + num_circulos;
         fprintf('Círculo %d: %d píxeles -> %d círculos superpuestos\n', i, area_actual, num_circulos);
@@ -101,6 +107,7 @@ end
 
 fprintf('Conteo original: %d | Conteo ajustado: %d\n', length(colonias_finales), conteo_ajustado);
 
+%% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
 figure(5);
 imshow(I_segmentada);
@@ -138,6 +145,6 @@ for i = 1:length(colonias_finales)
     text(centro(1) + radio + 8, centro(2), etiqueta, ...
          'Color', texto_color{1+(num_circulos>1)}, 'FontSize', 12, 'FontWeight', 'bold');
 end
-title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
 
+title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
 hold off;
