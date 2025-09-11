@@ -1,158 +1,163 @@
-%Proyecto original 
+clear all;close all;clc
 
-clear all;
-close all;
-clc;
+%% FASE 1: LECTURA Y SEGMENTACIÓN
+Im_color = imread("sp11_img01.jpg");
 
-I = imread("sp11_img01.jpg");
-[alto, ancho, canales] = size(I);
+[alto, ancho, canales] = size(Im_color);
 
-X = ancho/2;    % Centro X (por defecto: centro de la imagen)
-Y = alto/2;     % Centro Y (por defecto: centro de la imagen)
-R = min(ancho,alto)/2 * 0.85;  % Radio (porcentaje radio máximo posible)
+% Crear máscara circular de la caja Petri
+X = ancho/2;    
+Y = alto/2;     
+R = min(ancho,alto)/2 * 0.85;  
 
 mascara = zeros(alto, ancho);
-
 for x = 1:ancho
     for y = 1:alto
         d = sqrt((x - X)^2 + (y - Y)^2);
-        if d <= R  % Cambiado a <= para que dentro sea 1
-            mascara(y, x) = 1;  % Blanco dentro
+        if d <= R  
+            mascara(y, x) = 1;  
         else
-            mascara(y, x) = 0;  % Negro fuera
+            mascara(y, x) = 0;  
         end
     end
 end
-I_segmentada = I;
+
+I_segmentada = Im_color;
 for canal = 1:canales
-    I_segmentada(:,:,canal) = I(:,:,canal) .* uint8(mascara);
+    I_segmentada(:,:,canal) = Im_color(:,:,canal) .* uint8(mascara);
 end
+
 figure(1);
 imshow(I_segmentada);
-title('Mi imagen original');
+title("Imagen Original")
 
-Ig= rgb2gray(I_segmentada);
+%% FASE 2: CONVERSIÓN A ESCALA DE GRISES Y BINARIZACIÓN
+Ig = rgb2gray(I_segmentada);
 figure(2);
 imshow(Ig);
-title('Imagen en escala de grises');
+title('Imagen en Escala de Grises');
 
-mejorada = imadjust(Ig);
+[m n c] = size(Im_color);
+Mask = ones(m,n);
 
-% elimina ruido (puntos que no son colonias)
-%suave = medfilt2(mejorada); 
-suave = imgaussfilt(mejorada, 3);
-figure(3);
-imshow(suave);
-title('Imagen más suave');
+centro_x = n/2;
+centro_y = m/2;
+radio = centro_y*0.83;
 
+for y=1:m
+    for x=1:n
+    distancia = sqrt((centro_x-x)^2 + (centro_y-y)^2);
 
-bordes = edge(suave, 'Sobel');
-figure(4);
-imshow(bordes);
-title('Bordes detectados');
+    if distancia > radio
+        Mask(y,x) = 0;
+    end
+    end
+end
 
-% separa colonias (blancas) del fondo (negro)
-umbral_petri = graythresh(Ig) + 0.39;  % Umbral más alto
-borde_petri = imbinarize(Ig, umbral_petri);
+figure(3)
+imshow(Mask)
+title("Mascara a aplicar")
+
+for y=1:m
+    for x=1:n
+    Im_color(y,x) = Im_color(y,x)*Mask(y,x);
+    end
+end
+Im_gris = rgb2gray(Im_color);
+Im_gris2 = medfilt2(Im_gris,[7 7]);
+BW = imbinarize(Im_gris2,0.70);
+figure(4)
+imshow(BW)
+title("Imagen Binarizada")
+
+%% FASE 3: IDENTIFICACIÓN Y CONTEO
+% etiquetar colonias circulares
+[colonias, ~] = bwlabel(BW);
+stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
+
+% Filtros básicos
+areas = [stats.Area];
+perimetros = [stats.Perimeter];
+circularidad = 4 * pi * areas ./ (perimetros.^2);
+
+% Identificar colonias válidas (círculos)
+validas = (areas >= 5) & (areas >= 2500) & (circularidad >= 0);
+colonias_finales = stats(validas);
+
+areas_validas = [colonias_finales.Area];
+area_promedio = median(areas_validas);
+umbral_doble = area_promedio * 1.6; % Factor para detectar superposición
+
+% Detectar y ajustar conteo
+conteo_ajustado = 0;
+for i = 1:length(colonias_finales)
+    area_actual = colonias_finales(i).Area;
+    if area_actual > umbral_doble
+        % Círculo superpuesto -> contar como 2
+        num_circulos = round(area_actual / area_promedio);
+        conteo_ajustado = conteo_ajustado + num_circulos;
+        fprintf('Círculo %d: %d píxeles -> %d círculos superpuestos\n', i, area_actual, num_circulos);
+    else
+        % Círculo individual
+        conteo_ajustado = conteo_ajustado + 1;
+    end
+end
+
+fprintf('Conteo original: %d | Conteo ajustado: %d\n', length(colonias_finales), conteo_ajustado);
+
+%% FASE 4: ETIQUETADO
+% Mostrar imagen con etiquetas
 figure(5);
-imshow(borde_petri);
-title('petri');
+imshow(I_segmentada);
+hold on;
 
-% Eliminar objetos muy pequeños que no son colonias
-limpia = bwareaopen(borde_petri, 600);
-limpia = imclearborder(limpia);
-figure(6);
-imshow(limpia);
-title('Imagen limpia (solo colonias grandes)');
+areas_validas = [colonias_finales.Area];
+area_ref = median(areas_validas);
+umbral = area_ref * 1.6;
 
-% Eliminar objetos que tocan los bordes (caja de Petri)
-imagen_limpia = imclearborder(limpia);
-
-% Rellenar huecos en las colonias
-imagen_limpia2 = imfill(limpia, 'holes');
-
-%figure(7);
-imshow(imagen_limpia2);
-title('Imagen limpia (parámetros ajustados)');
-
-% Cada colonia recibe un número diferente
-[colonias, numero] = bwlabel(limpia);
-%esto no estaba
-propiedades_todas = regionprops(colonias, 'Centroid', 'Area', 'Perimeter');
-propiedades_validas = [];
-indices_validos = [];
-
-for i = 1:length(propiedades_todas)
-    area = propiedades_todas(i).Area;
-    perimetro = propiedades_todas(i).Perimeter;
+conteo_total = 0;
+for i = 1:length(colonias_finales)
+    centro = colonias_finales(i).Centroid;
+    area = colonias_finales(i).Area;
+    radio = sqrt(area / pi);
     
-  if perimetro > 0
-    circularidad = 4 * pi * area / (perimetro^2);
+    % Detectar superposición
+    num_circulos = (area > umbral) * round(area/area_ref) + (area <= umbral);
+    conteo_total = conteo_total + num_circulos;
     
-    % Filtrado más estricto para reducir falsas detecciones
-    if circularidad >= 0.5 && area >= 100  %antes 0.82 y 300
-        propiedades_validas = [propiedades_validas; propiedades_todas(i)];
-        indices_validos = [indices_validos, i];
+    % Crear círculo visual
+    theta = linspace(0, 2*pi, 50);
+    x_circulo = centro(1) + radio * cos(theta);
+    y_circulo = centro(2) + radio * sin(theta);
+    
+    % Color según tipo: rojo=superpuesto, verde=individual
+    color = {'g-', 'r-'}; texto_color = {'green', 'red'};
+    plot(x_circulo, y_circulo, color{1+(num_circulos>1)}, 'LineWidth', 2);
+    
+    % Etiqueta con número detectado
+    if num_circulos > 1
+        etiqueta = sprintf('%dx', num_circulos);
+    else
+        etiqueta = sprintf('%d', i);
     end
-  end
+    text(centro(1) + radio + 8, centro(2), etiqueta, ...
+         'Color', texto_color{1+(num_circulos>1)}, 'FontSize', 11, 'FontWeight', 'bold');
 end
 
-% Eliminar objetos muy cercanos (duplicados) %tampoco estaba
-if length(propiedades_validas) > 1
-    distancia_minima = 35;  % píxeles
-    centroides = [propiedades_validas.Centroid];
-    centroides = reshape(centroides, 2, [])';  % Convertir a matriz Nx2
-    
-    indices_mantener = true(size(propiedades_validas));
-    
-    for i = 1:length(propiedades_validas)
-        if indices_mantener(i)
-            for j = i+1:length(propiedades_validas)
-                if indices_mantener(j)
-                    distancia = sqrt(sum((centroides(i,:) - centroides(j,:)).^2));
-                    if distancia < distancia_minima
-                        %Mantener el más grande, eliminar el más pequeño
-                        if propiedades_validas(i).Area >= propiedades_validas(j).Area
-                            indices_mantener(j) = false;
-                        else
-                            indices_mantener(i) = false;
-                            break;
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    % Actualizar con objetos sin duplicados
-    propiedades = propiedades_validas(indices_mantener);
-    numero_colonias = length(propiedades);
-end
+title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
 
-% Actualizar número de colonias reales
-numero_colonias = length(propiedades_validas);
-propiedades = propiedades_validas;  % Usar solo las válidas
+individuales = sum([colonias_finales.Area] <= umbral);
+superpuestos = sum([colonias_finales.Area] > umbral);
+area_promedio = mean([colonias_finales.Area]);
+densidad = conteo_total / (size(I_segmentada,1) * size(I_segmentada,2)) * 100000;
 
-% Mostrar las colonias con colores diferentes
-figure(8);
-imshow(label2rgb(colonias, 'jet', 'k', 'shuffle'));
-title(['Colonias encontradas: ' num2str(numero)]);
+stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
+    'Total círculos: %d | Área prom: %.0f px² | Superposición: %.1f%%'], ...
+    length(colonias_finales), individuales, superpuestos, conteo_total, ...
+    area_promedio, (superpuestos/length(colonias_finales))*100);
 
-% Calcular el centro de cada colonia
-propiedades = regionprops(colonias, 'Area', 'Centroid');
-areas = [propiedades.Area];
-% Mantener solo objetos con área entre 150 y 2000
-indices_validos = find(areas >= 150 & areas <= 155);
-% Crear una copia de la imagen original para marcar
-imagen_marcada = I_segmentada;
-figure(9);
-imshow(imagen_marcada);
-hold on;  % Esto permite dibujar encima de la imagen
+text(15, 90, stats_text, 'BackgroundColor', [0.95 0.98 1], 'EdgeColor', [0.3 0.5 0.8], ...
+    'FontSize', 8, 'FontWeight', 'bold', 'LineWidth', 1);
 
-% Dibujar un círculo rojo en el centro de cada colonia
-for i = 1:numero
-    centro = propiedades(i).Centroid;
-    plot(centro(1), centro(2), 'ro', 'MarkerSize', 10, 'LineWidth', 2);
-    text(centro(1)+15, centro(2), num2str(i), 'Color', 'red', 'FontSize', 10);
-end
-
+hold off;
+%thank you!
