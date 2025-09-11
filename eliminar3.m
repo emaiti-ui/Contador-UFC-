@@ -143,8 +143,22 @@ for i = 1:length(colonias_finales)
         etiqueta = sprintf('%d', i);
     end
     text(centro(1) + radio + 8, centro(2), etiqueta, ...
-         'Color', texto_color{1+(num_circulos>1)}, 'FontSize', 12, 'FontWeight', 'bold');
+         'Color', texto_color{1+(num_circulos>1)}, 'FontSize', 11, 'FontWeight', 'bold');
 end
 
 title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
+
+individuales = sum([colonias_finales.Area] <= umbral);
+superpuestos = sum([colonias_finales.Area] > umbral);
+area_promedio = mean([colonias_finales.Area]);
+densidad = conteo_total / (size(I_segmentada,1) * size(I_segmentada,2)) * 100000;
+
+stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
+    'Total círculos: %d | Área prom: %.0f px² | Superposición: %.1f%%'], ...
+    length(colonias_finales), individuales, superpuestos, conteo_total, ...
+    area_promedio, (superpuestos/length(colonias_finales))*100);
+
+text(15, 90, stats_text, 'BackgroundColor', [0.95 0.98 1], 'EdgeColor', [0.3 0.5 0.8], ...
+    'FontSize', 8, 'FontWeight', 'bold', 'LineWidth', 1);
+
 hold off;
