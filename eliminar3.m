@@ -63,19 +63,12 @@ for y=1:m
 end
 Im_gris = rgb2gray(Im_color);
 Im_gris2 = medfilt2(Im_gris,[7 7]);
-BW = imbinarize(Im_gris2,0.75);
+BW = imbinarize(Im_gris2,0.70);
 figure(4)
 imshow(BW)
 
-%% Para colonias muy pegadas
-se_erosion = strel('disk', 3);  % Erosión más fuerte
-BW_erosionado = imerode(BW, se_erosion);
-BW_separado = imdilate(BW_erosionado, strel('disk', 9));  % Dilatación menor
-figure(5)
-imshow(BW_separado)
-%%
 % etiquetar colonias circulares
-[colonias, ~] = bwlabel(BW_separado);
+[colonias, ~] = bwlabel(BW);
 stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
 
 % Filtros básicos
@@ -87,26 +80,64 @@ circularidad = 4 * pi * areas ./ (perimetros.^2);
 validas = (areas >= 5) & (areas >= 2500) & (circularidad >= 0);
 colonias_finales = stats(validas);
 
+areas_validas = [colonias_finales.Area];
+area_promedio = median(areas_validas);
+umbral_doble = area_promedio * 1.6; % Factor para detectar superposición
+
+% Detectar y ajustar conteo
+conteo_ajustado = 0;
+for i = 1:length(colonias_finales)
+    area_actual = colonias_finales(i).Area;
+    if area_actual > umbral_doble
+        % Círculo superpuesto - contar como 2
+        num_circulos = round(area_actual / area_promedio);
+        conteo_ajustado = conteo_ajustado + num_circulos;
+        fprintf('Círculo %d: %d píxeles -> %d círculos superpuestos\n', i, area_actual, num_circulos);
+    else
+        % Círculo individual
+        conteo_ajustado = conteo_ajustado + 1;
+    end
+end
+
+fprintf('Conteo original: %d | Conteo ajustado: %d\n', length(colonias_finales), conteo_ajustado);
+
 % Mostrar imagen con etiquetas
-figure(6);
+figure(5);
 imshow(I_segmentada);
 hold on;
 
+areas_validas = [colonias_finales.Area];
+area_ref = median(areas_validas);
+umbral = area_ref * 1.6;
+
+conteo_total = 0;
 for i = 1:length(colonias_finales)
     centro = colonias_finales(i).Centroid;
     area = colonias_finales(i).Area;
     radio = sqrt(area / pi);
     
-    % Crear puntos del círculo
+    % Detectar superposición
+    num_circulos = (area > umbral) * round(area/area_ref) + (area <= umbral);
+    conteo_total = conteo_total + num_circulos;
+    
+    % Crear círculo visual
     theta = linspace(0, 2*pi, 50);
     x_circulo = centro(1) + radio * cos(theta);
     y_circulo = centro(2) + radio * sin(theta);
     
-    % Dibujar círculo y número
-    plot(x_circulo, y_circulo, 'r-', 'LineWidth', 2);
-    text(centro(1) + radio + 10, centro(2), num2str(i), ...
-         'Color', 'red', 'FontSize', 12, 'FontWeight', 'bold');
+    % Color según tipo: rojo=superpuesto, verde=individual
+    color = {'g-', 'r-'}; texto_color = {'green', 'red'};
+    plot(x_circulo, y_circulo, color{1+(num_circulos>1)}, 'LineWidth', 2);
+    
+    % Etiqueta con número detectado
+    if num_circulos > 1
+        etiqueta = sprintf('%dx', num_circulos);
+    else
+        etiqueta = sprintf('%d', i);
+    end
+    text(centro(1) + radio + 8, centro(2), etiqueta, ...
+         'Color', texto_color{1+(num_circulos>1)}, 'FontSize', 12, 'FontWeight', 'bold');
 end
+title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
 
-title(['Total: ' num2str(length(colonias_finales)) ' colonias']);
 hold off;
