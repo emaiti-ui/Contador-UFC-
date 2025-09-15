@@ -1,7 +1,7 @@
 clear all;close all;clc
 
 %% FASE 1: LECTURA Y SEGMENTACIÓN
-Im_color = imread("sp11_img01.jpg");
+Im_color = imread("sp11_img03.jpg");
 
 [alto, ancho, canales] = size(Im_color);
 
@@ -65,7 +65,7 @@ for y=1:m
 end
 Im_gris = rgb2gray(Im_color);
 Im_gris2 = medfilt2(Im_gris,[7 7]);
-BW = imbinarize(Im_gris2,0.70);
+BW = imbinarize(Im_gris2,0.7);
 figure(4)
 imshow(BW)
 title("Imagen Binarizada")
@@ -86,7 +86,7 @@ colonias_finales = stats(validas);
 
 areas_validas = [colonias_finales.Area];
 area_promedio = median(areas_validas);
-umbral_doble = area_promedio * 1.6; % Factor para detectar superposición
+umbral_doble = area_promedio * 1.63; % Factor para detectar superposición
 
 % Detectar y ajustar conteo
 conteo_ajustado = 0;
