@@ -21,6 +21,7 @@ function guardarFigura(guardar, carpeta, nombre, sufijo, es_binaria, matriz)
         end
     end
 end
+
 for i = 1:length(archivos)
     fprintf('Procesando %d/%d: %s\n', i, length(archivos), archivos{i});
     [~, nombre_base, ~] = fileparts(archivos{i});
