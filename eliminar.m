@@ -1,7 +1,32 @@
 clear all;close all;clc
+%% FASE GENERAL O 0: LECTURA AUTOMÁTICA
+fprintf('Selecciona las imágenes que deseas procesar...\n');
+[archivos, ruta] = uigetfile({'*.jpg;*.png;*.bmp', 'Imágenes'}, 'Selecciona imágenes', 'MultiSelect', 'on');
+if isequal(archivos, 0), disp('No se seleccionaron archivos');return; end
+if ~iscell(archivos), archivos = {archivos}; end
 
+for i = 1:length(archivos)
+    fprintf('Procesando %d/%d: %s\n', i, length(archivos), archivos{i});
+    [~, nombre_base, ~] = fileparts(archivos{i});
+
+respuesta = questdlg('¿Deseas guardar las figuras?', 'Guardar figuras', 'Sí', 'No', 'No');
+guardar_figuras = strcmp(respuesta, 'Sí');
+if guardar_figuras
+    carpeta_resultados = 'Resultados_Analisis';
+    if ~exist(carpeta_resultados, 'dir'), mkdir(carpeta_resultados); end
+end
+end
+function guardarFigura(guardar, carpeta, nombre, sufijo, es_binaria, matriz)
+    if guardar
+        if es_binaria
+            imwrite(matriz, fullfile(carpeta, sprintf('%s_%s.jpg', nombre, sufijo)));
+        else
+            saveas(gcf, fullfile(carpeta, sprintf('%s_%s.jpg', nombre, sufijo)));
+        end
+    end
+end
 %% FASE 1: LECTURA Y SEGMENTACIÓN
-Im_color = imread("sp11_img03.jpg");
+Im_color = imread(fullfile(ruta, archivos{i}));
 
 [alto, ancho, canales] = size(Im_color);
 
@@ -26,16 +51,18 @@ I_segmentada = Im_color;
 for canal = 1:canales
     I_segmentada(:,:,canal) = Im_color(:,:,canal) .* uint8(mascara);
 end
-
-figure(1);
-imshow(I_segmentada);
+I_original_limpia = I_segmentada;
+%figure(i + 1);
+%imshow(I_segmentada);
 title("Imagen Original")
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '01_original', true, I_original_limpia);
 
 %% FASE 2: CONVERSIÓN A ESCALA DE GRISES Y BINARIZACIÓN
 Ig = rgb2gray(I_segmentada);
-figure(2);
-imshow(Ig);
+%figure(i + 2);
+%imshow(Ig);
 title('Imagen en Escala de Grises');
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', true, Ig);
 
 [m n c] = size(Im_color);
 Mask = ones(m,n);
@@ -54,9 +81,10 @@ for y=1:m
     end
 end
 
-figure(3)
-imshow(Mask)
+%figure(i + 3)
+%imshow(Mask)
 title("Mascara a aplicar")
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_mascara',true, Mask);
 
 for y=1:m
     for x=1:n
@@ -66,9 +94,10 @@ end
 Im_gris = rgb2gray(Im_color);
 Im_gris2 = medfilt2(Im_gris,[7 7]);
 BW = imbinarize(Im_gris2,0.7);
-figure(4)
-imshow(BW)
+%figure(i + 4)
+%imshow(BW)
 title("Imagen Binarizada")
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_binarizada', true, BW);
 
 %% FASE 3: IDENTIFICACIÓN Y CONTEO
 % etiquetar colonias circulares
@@ -112,8 +141,9 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
-figure(5);
+%figure(i + 5);
 imshow(I_segmentada);
+Etiquetado = I_segmentada;
 hold on;
 
 areas_validas = [colonias_finales.Area];
@@ -150,6 +180,7 @@ for i = 1:length(colonias_finales)
 end
 
 title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_Resultado', false, Etiquetado);
 
 individuales = sum([colonias_finales.Area] <= umbral);
 superpuestos = sum([colonias_finales.Area] > umbral);
@@ -163,6 +194,10 @@ stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
 
 text(15, 90, stats_text, 'BackgroundColor', [0.95 0.98 1], 'EdgeColor', [0.3 0.5 0.8], ...
     'FontSize', 8, 'FontWeight', 'bold', 'LineWidth', 1);
-
 hold off;
+
+fprintf('\nProcesadas %d imágenes\n', length(archivos));
+if guardar_figuras
+    fprintf('Todas las figuras guardadas en: %s\n', carpeta_resultados);
+end
 %thank you!
