@@ -5,17 +5,13 @@ fprintf('Selecciona las imágenes que deseas procesar...\n');
 if isequal(archivos, 0), disp('No se seleccionaron archivos');return; end
 if ~iscell(archivos), archivos = {archivos}; end
 
-for i = 1:length(archivos)
-    fprintf('Procesando %d/%d: %s\n', i, length(archivos), archivos{i});
-    [~, nombre_base, ~] = fileparts(archivos{i});
-
 respuesta = questdlg('¿Deseas guardar las figuras?', 'Guardar figuras', 'Sí', 'No', 'No');
 guardar_figuras = strcmp(respuesta, 'Sí');
 if guardar_figuras
     carpeta_resultados = 'Resultados_Analisis';
     if ~exist(carpeta_resultados, 'dir'), mkdir(carpeta_resultados); end
 end
-end
+
 function guardarFigura(guardar, carpeta, nombre, sufijo, es_binaria, matriz)
     if guardar
         if es_binaria
@@ -25,6 +21,10 @@ function guardarFigura(guardar, carpeta, nombre, sufijo, es_binaria, matriz)
         end
     end
 end
+for i = 1:length(archivos)
+    fprintf('Procesando %d/%d: %s\n', i, length(archivos), archivos{i});
+    [~, nombre_base, ~] = fileparts(archivos{i});
+
 %% FASE 1: LECTURA Y SEGMENTACIÓN
 Im_color = imread(fullfile(ruta, archivos{i}));
 
@@ -106,7 +106,7 @@ stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
 
 % Análisis básico automático
 areas = [stats.Area];
-if isempty(areas), fprintf('No hay objetos\n'); return; end
+if isempty(areas), fprintf('No hay objetos\n'); continue; end
 
 % Filtros automáticos simples
 area_promedio = mean(areas);
@@ -199,5 +199,6 @@ hold off;
 fprintf('\nProcesadas %d imágenes\n', length(archivos));
 if guardar_figuras
     fprintf('Todas las figuras guardadas en: %s\n', carpeta_resultados);
+end
 end
 %thank you!
