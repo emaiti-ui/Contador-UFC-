@@ -181,7 +181,6 @@ for i = 1:length(colonias_finales)
 end
 
 title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(colonias_finales)) ' objetos)']);
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_Resultado', false, Etiquetado);
 
 individuales = sum([colonias_finales.Area] <= umbral);
 superpuestos = sum([colonias_finales.Area] > umbral);
@@ -196,6 +195,7 @@ stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
 text(15, 90, stats_text, 'BackgroundColor', [0.95 0.98 1], 'EdgeColor', [0.3 0.5 0.8], ...
     'FontSize', 8, 'FontWeight', 'bold', 'LineWidth', 1);
 hold off;
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_Resultado', false, Etiquetado);
 
 fprintf('\nProcesadas %d imágenes\n', length(archivos));
 if guardar_figuras
