@@ -1,4 +1,5 @@
 clear all;close all;clc
+
 %% FASE INICIAL O 0: LECTURA DE IMAGENES
 
 %Seleccionar multiples imagenes
