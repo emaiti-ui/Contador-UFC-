@@ -148,7 +148,7 @@ areas_ok = [colonias_finales.Area]; % Áreas de colonias válidas
 
 % Encontrar tamaño de colonia individual (más simple)
 areas_ordenadas = sort(areas_ok);
-colonia_individual = areas_ordenadas(round(length(areas_ordenadas)*0.15)); % 30% más pequeña
+colonia_individual = areas_ordenadas(round(length(areas_ordenadas)*0.15)); % 15% más pequeña
 
 % Contar círculos
 % Si un objeto es mucho más grande que una colonia individual, probablemente contiene múltiples colonias
