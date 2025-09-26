@@ -168,7 +168,7 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
 %figure(i + 5);
-imshow(I_segmentada);
+imshow(Im_color);
 Etiquetado = I_segmentada;
 hold on; % Permite dibujar sobre la imagen
 
