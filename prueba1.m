@@ -85,30 +85,42 @@ Ig = rgb2gray(I_segmentada);
 %figure(i + 2);
 %imshow(Ig);
 title('Imagen en Escala de Grises');
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', true, Ig);
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', false, Ig);
 
 [m n c] = size(Im_color);
 Mask = ones(m,n); % Inicializa máscara como matriz de unos
-
-centro_x = n/2;
-centro_y = m/2;
-radio = centro_y*0.7;
 Im_gris = rgb2gray(Im_color);
 
-for y=1:m
-    for x=1:n
-    if Im_gris(y,x) < 150
-            Im_gris(y,x) = 200;
-    end
+promedio = 0;
+contador =0;
+for i=1:100
+    for j=1:100
+        promedio = promedio + double(Im_gris(i,j));
+        contador = contador +1;
     end
 end
+promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
+%figure(2)
+%   imshow(Im_gris)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', false, Im_gris);
 
-%figure(i + 3)
-%imshow(Mask)
-%title("Mascara a aplicar")
-Im_gris = imcomplement(Im_gris);
-title("Negativo")
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_Negativo',true, Im_gris);
+if (promedio < 100)
+centro_x = n/2;
+centro_y = m/2;
+radio = centro_y*0.75;
+
+    for y=1:m
+        for x=1:n
+            distancia = sqrt((centro_x-x)^2 + (centro_y-y)^2);
+
+            if distancia > radio
+                Mask(y,x) = 0;
+            end
+        end
+    end
+    %figure(3)
+    %    imshow(Mask)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_mascara',true, Mask);
 
 for y=1:m
     for x=1:n
@@ -116,16 +128,45 @@ for y=1:m
     end
 end
 
+%figure(4)
+%imshow(Im_gris)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_grises', false, Im_gris);
+
+Im_gris2 = medfilt2(Im_gris,[7 7]);
+    BW = imbinarize(Im_gris2,0.75);
+%figure(5)
+%imshow(BW)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_binarizada', true, BW);
+
+%% DB2
+else 
+for y=1:m
+    for x=1:n
+    if Im_gris(y,x) < 150
+            Im_gris(y,x) = 200;
+    end
+    end
+end
+Im_gris = imcomplement(Im_gris);
+%figure(2)
+%imshow(Im_gris)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_grises', true, Im_gris);
+
 Im_gris2 = medfilt2(Im_gris,[7 7]); % Aplica filtro mediano 7x7 para reducir ruido
-%BW = imbinarize(Im_gris2,0.30);  %Para imagen prueba2.jpg
-BW = imbinarize(Im_gris2,0.35);  %Para imagen prueba3.jpg
+
+if promedio > 160
+    BW = imbinarize(Im_gris2,0.31);  
+else
+    BW = imbinarize(Im_gris2,0.35);  
+end
 se = strel('disk',21);
 BW = imopen(BW,se);
 BW = imclose(BW,se);
 BW = imfill(BW,'holes');
-%figure(4)
+%figure(3)
 %imshow(BW)
 title("Imagen Binarizada")
+end
 guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_binarizada', true, BW);
 
 %% FASE 3: IDENTIFICACIÓN Y CONTEO
@@ -174,7 +215,7 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
 %figure(i + 5);
-imshow(Im_color);
+imshow(I_segmentada);
 Etiquetado = I_segmentada;
 hold on; % Permite dibujar sobre la imagen
 
