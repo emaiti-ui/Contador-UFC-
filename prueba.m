@@ -67,7 +67,7 @@ for x = 1:ancho
 end
 
 %Aplica la mascara a todos los canales de color
-I_segmentada = Im_color;
+%I_segmentada = Im_color;
 for canal = 1:canales
     I_segmentada(:,:,canal) = Im_color(:,:,canal) .* uint8(mascara);
 end
@@ -162,8 +162,6 @@ for i = 1:length(areas_ok)
     end
     conteo_total = conteo_total + num_circulos;
 end
-
-fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), conteo_total);
 
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
