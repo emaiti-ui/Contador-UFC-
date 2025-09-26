@@ -92,32 +92,38 @@ Mask = ones(m,n); % Inicializa máscara como matriz de unos
 
 centro_x = n/2;
 centro_y = m/2;
-radio = centro_y*0.83;
+radio = centro_y*0.7;
+Im_gris = rgb2gray(Im_color);
 
 for y=1:m
     for x=1:n
-    distancia = sqrt((centro_x-x)^2 + (centro_y-y)^2);
-
-    if distancia > radio
-        Mask(y,x) = 0;
+    if Im_gris(y,x) < 150
+            Im_gris(y,x) = 200;
     end
     end
 end
 
 %figure(i + 3)
 %imshow(Mask)
-title("Mascara a aplicar")
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_mascara',true, Mask);
+%title("Mascara a aplicar")
+Im_gris = imcomplement(Im_gris);
+title("Negativo")
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_Negativo',true, Im_gris);
 
 for y=1:m
     for x=1:n
-    Im_color(y,x) = Im_color(y,x)*Mask(y,x); % Multiplica por máscara
+    Im_gris(y,x) = Im_gris(y,x)*Mask(y,x); % Multiplica por máscara
     end
 end
-Im_gris = rgb2gray(Im_color); % Convierte a escala de grises
+
 Im_gris2 = medfilt2(Im_gris,[7 7]); % Aplica filtro mediano 7x7 para reducir ruido
-BW = imbinarize(Im_gris2,0.7); % Binariza con umbral de 0.7 (70%)
-%figure(i + 4)
+%BW = imbinarize(Im_gris2,0.30);  %Para imagen prueba2.jpg
+BW = imbinarize(Im_gris2,0.35);  %Para imagen prueba3.jpg
+se = strel('disk',21);
+BW = imopen(BW,se);
+BW = imclose(BW,se);
+BW = imfill(BW,'holes');
+%figure(4)
 %imshow(BW)
 title("Imagen Binarizada")
 guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_binarizada', true, BW);
@@ -168,7 +174,7 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
 %figure(i + 5);
-imshow(I_segmentada);
+imshow(Im_color);
 Etiquetado = I_segmentada;
 hold on; % Permite dibujar sobre la imagen
 
