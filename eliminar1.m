@@ -1,56 +1,66 @@
 close all;clear all;clc
 %% FASE 1: LECTURA Y SEGMENTACIÓN
 %Lee imagen a color y obtiene sus dimensiones
-Im_color = imread("359.jpg");
-[alto, ancho, canales] = size(Im_color);
-
-% Crear máscara circular de la caja Petri
-%Enmascarar area de interes y eliminar el fondo
-X = ancho/2;    %Centro X
-Y = alto/2;     %Centro Y
-R = min(ancho,alto)/2 * 0.85;  %Radio del 85% del minimo
-
-% Crea máscara binaria circular usando distancia euclidiana
-mascara = zeros(alto, ancho);
-for x = 1:ancho
-    for y = 1:alto
-        d = sqrt((x - X)^2 + (y - Y)^2); %Calcula distancia al centro
-        if d <= R  
-            mascara(y, x) = 1;  %Dentro del circulo
-        else
-            mascara(y, x) = 0;  %Fuera del circulo
-        end
-    end
-end
-
-%Aplica la mascara a todos los canales de color
-I_segmentada = Im_color;
-for canal = 1:canales
-    I_segmentada(:,:,canal) = Im_color(:,:,canal) .* uint8(mascara);
-end
-I_original_limpia = I_segmentada;
-figure(1);
-imshow(I_segmentada);
-
+Im_color = imread("sp11_img02.jpg");
+figure(1)
+imshow(Im_color)
 % Muestra y guarda la imagen original limpia
 title("Imagen Original")
 
 
 %% FASE 2: CONVERSIÓN A ESCALA DE GRISES Y BINARIZACIÓN
 % Convierte a escala de grises para simplificar el procesamiento
-Ig = rgb2gray(I_segmentada);
+Ig = rgb2gray(Im_color);
 figure(2);
 imshow(Ig);
 title('Imagen en Escala de Grises');
 
 [m n c] = size(Im_color);
 Mask = ones(m,n); % Inicializa máscara como matriz de unos
+Im_gris = rgb2gray(Im_color);
 
+promedio = 0;
+contador =0;
+for i=1:100
+    for j=1:100
+        promedio = promedio + double(Im_gris(i,j));
+        contador = contador +1;
+    end
+end
+promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
+figure(2)
+   imshow(Im_gris)
+
+if (promedio < 100)
 centro_x = n/2;
 centro_y = m/2;
 radio = centro_y*0.7;
-Im_gris = rgb2gray(Im_color);
 
+    for y=1:m
+        for x=1:n
+            distancia = sqrt((centro_x-x)^2 + (centro_y-y)^2);
+
+            if distancia > radio
+                Mask(y,x) = 0;
+            end
+        end
+    end
+    figure(3)
+        imshow(Mask)
+for y=1:m
+    for x=1:n
+    Im_gris(y,x) = Im_gris(y,x)*Mask(y,x); % Multiplica por máscara
+    end
+end
+figure(4)
+imshow(Im_gris)
+Im_gris2 = medfilt2(Im_gris,[7 7]);
+    BW = imbinarize(Im_gris2,0.75);
+figure(5)
+imshow(BW)
+
+%% DB2
+else 
 for y=1:m
     for x=1:n
     if Im_gris(y,x) < 150
@@ -58,28 +68,25 @@ for y=1:m
     end
     end
 end
-
-figure(3)
-imshow(Im_gris)
 Im_gris = imcomplement(Im_gris);
-
-for y=1:m
-    for x=1:n
-    Im_gris(y,x) = Im_gris(y,x)*Mask(y,x); % Multiplica por máscara
-    end
-end
+figure(2)
+imshow(Im_gris)
 
 Im_gris2 = medfilt2(Im_gris,[7 7]); % Aplica filtro mediano 7x7 para reducir ruido
-%BW = imbinarize(Im_gris2,0.30);  %Para imagen prueba2.jpg
-BW = imbinarize(Im_gris2,0.35);  %Para imagen prueba3.jpg
+
+if promedio > 160
+    BW = imbinarize(Im_gris2,0.31);  %Para imagen prueba2.jpg
+else
+    BW = imbinarize(Im_gris2,0.35);  %Para imagen prueba3.jpg
+end
 se = strel('disk',21);
 BW = imopen(BW,se);
 BW = imclose(BW,se);
 BW = imfill(BW,'holes');
-figure(4)
+figure(3)
 imshow(BW)
 title("Imagen Binarizada")
-
+end
 
 
 
@@ -130,7 +137,7 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 % Mostrar imagen con etiquetas
 figure(5);
 imshow(Im_color);
-Etiquetado = I_segmentada;
+Etiquetado = Im_color;
 hold on; % Permite dibujar sobre la imagen
 
 areas_validas = [colonias_finales.Area];
@@ -173,7 +180,7 @@ title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(coloni
 individuales = sum([colonias_finales.Area] <= umbral);
 superpuestos = sum([colonias_finales.Area] > umbral);
 area_promedio = mean([colonias_finales.Area]);
-densidad = conteo_total / (size(I_segmentada,1) * size(I_segmentada,2)) * 100000;
+densidad = conteo_total / (size(Im_color,1) * size(Im_color,2)) * 100000;
 
 % Cuadro de estadisticas 
 stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
