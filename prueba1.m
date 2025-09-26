@@ -53,7 +53,8 @@ Im_gris = rgb2gray(Im_color);
 %figure(1)
 %   imshow(Im_color)
 guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '01_original', true, Im_color);
-%% Calcular el promedio de un recuadro superior derecho para saber el tono del fondo
+% Calcular el promedio de un recuadro superior derecho para saber el tono del fondo
+
 promedio = 0;
 contador =0;
 for i=1:100
@@ -64,7 +65,7 @@ for i=1:100
 end
 promedio = promedio/contador % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
 
-%% si la imagen es de la primer base de datos se ejecuta esta parte
+%si la imagen es de la primer base de datos se ejecuta esta parte
 
 if (promedio < 100)
     centro_x = n/2;
@@ -97,7 +98,8 @@ guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_grises', tru
 %    figure(4)
 %        imshow(BW)
 guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_Binarizada', true, BW);
-%% si la imagen es de la otra base de datos se eejecuta esta parte
+
+% si la imagen es de la otra base de datos se ejecuta esta parte
 else
     for y=1:m
         for x=1:n
