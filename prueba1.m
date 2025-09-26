@@ -45,52 +45,15 @@ for i = 1:length(archivos)
 %% FASE 1: LECTURA Y SEGMENTACIÓN
 %Lee imagen a color y obtiene sus dimensiones
 Im_color = imread(fullfile(ruta, archivos{i}));
-[alto, ancho, canales] = size(Im_color);
 
-% Crear máscara circular de la caja Petri
-%Enmascarar area de interes y eliminar el fondo
-X = ancho/2;    %Centro X
-Y = alto/2;     %Centro Y
-R = min(ancho,alto)/2 * 0.85;  %Radio del 85% del minimo
+[m n c] = size(Im_color)
+Mask = ones(m,n);
 
-% Crea máscara binaria circular usando distancia euclidiana
-mascara = zeros(alto, ancho);
-for x = 1:ancho
-    for y = 1:alto
-        d = sqrt((x - X)^2 + (y - Y)^2); %Calcula distancia al centro
-        if d <= R  
-            mascara(y, x) = 1;  %Dentro del circulo
-        else
-            mascara(y, x) = 0;  %Fuera del circulo
-        end
-    end
-end
-
-%Aplica la mascara a todos los canales de color
-I_segmentada = Im_color;
-for canal = 1:canales
-    I_segmentada(:,:,canal) = Im_color(:,:,canal) .* uint8(mascara);
-end
-I_original_limpia = I_segmentada;
-%figure(i + 1);
-%imshow(I_segmentada);
-
-% Muestra y guarda la imagen original limpia
-title("Imagen Original")
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '01_original', true, I_original_limpia);
-
-%% FASE 2: CONVERSIÓN A ESCALA DE GRISES Y BINARIZACIÓN
-% Convierte a escala de grises para simplificar el procesamiento
-Ig = rgb2gray(I_segmentada);
-%figure(i + 2);
-%imshow(Ig);
-title('Imagen en Escala de Grises');
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', false, Ig);
-
-[m n c] = size(Im_color);
-Mask = ones(m,n); % Inicializa máscara como matriz de unos
 Im_gris = rgb2gray(Im_color);
-
+%figure(1)
+%   imshow(Im_color)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '01_original', true, Im_color);
+%% Calcular el promedio de un recuadro superior derecho para saber el tono del fondo
 promedio = 0;
 contador =0;
 for i=1:100
@@ -99,15 +62,14 @@ for i=1:100
         contador = contador +1;
     end
 end
-promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
-%figure(2)
-%   imshow(Im_gris)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', false, Im_gris);
+promedio = promedio/contador % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
+
+%% si la imagen es de la primer base de datos se ejecuta esta parte
 
 if (promedio < 100)
-centro_x = n/2;
-centro_y = m/2;
-radio = centro_y*0.75;
+    centro_x = n/2;
+    centro_y = m/2;
+    radio = centro_y*0.83;
 
     for y=1:m
         for x=1:n
@@ -118,56 +80,52 @@ radio = centro_y*0.75;
             end
         end
     end
-    %figure(3)
-    %    imshow(Mask)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_mascara',true, Mask);
-
-for y=1:m
-    for x=1:n
-    Im_gris(y,x) = Im_gris(y,x)*Mask(y,x); % Multiplica por máscara
+ %   figure(2)
+ %       imshow(Mask)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_mascara', true, Mask);
+    for y=1:m
+        for x=1:n
+            Im_gris(y,x) = Im_gris(y,x)*Mask(y,x);
+        end
     end
-end
-
-%figure(4)
-%imshow(Im_gris)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_grises', false, Im_gris);
-
-Im_gris2 = medfilt2(Im_gris,[7 7]);
-    BW = imbinarize(Im_gris2,0.75);
-%figure(5)
-%imshow(BW)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_binarizada', true, BW);
-
-%% DB2
-else 
-for y=1:m
-    for x=1:n
-    if Im_gris(y,x) < 150
-            Im_gris(y,x) = 200;
-    end
-    end
-end
-Im_gris = imcomplement(Im_gris);
-%figure(2)
-%imshow(Im_gris)
+%   figure(3)
+ %       imshow(Im_gris)
 guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_grises', true, Im_gris);
+    Im_gris2 = medfilt2(Im_gris,[7 7]);
+    BW = imbinarize(Im_gris2,0.75);
 
-Im_gris2 = medfilt2(Im_gris,[7 7]); % Aplica filtro mediano 7x7 para reducir ruido
-
-if promedio > 160
-    BW = imbinarize(Im_gris2,0.31);  
+%    figure(4)
+%        imshow(BW)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_Binarizada', true, BW);
+%% si la imagen es de la otra base de datos se eejecuta esta parte
 else
-    BW = imbinarize(Im_gris2,0.35);  
+    for y=1:m
+        for x=1:n
+            if Im_gris(y,x) < 150
+                Im_gris(y,x) = 200;
+            end
+        end
+    end
+    guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_grises', true, Im_gris);
+    Im_gris = imcomplement(Im_gris);
+ %   figure(2)
+ %       imshow(Im_gris)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_negativo', true, Im_gris);    
+    Im_gris2 = medfilt2(Im_gris,[7 7]);
+
+    if promedio > 160
+        BW = imbinarize(Im_gris2,0.3);  %Para imagen prueba2.jpg
+    else
+        BW = imbinarize(Im_gris2,0.36);  %Para imagen prueba3.jpg
+    end
+    se = strel('disk',21);
+    BW = imopen(BW,se);
+    BW = imclose(BW,se);
+    BW = imfill(BW,'holes');
+%    figure(3)
+%    imshow(BW)
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_Binarizada', true, BW);
 end
-se = strel('disk',21);
-BW = imopen(BW,se);
-BW = imclose(BW,se);
-BW = imfill(BW,'holes');
-%figure(3)
-%imshow(BW)
-title("Imagen Binarizada")
-end
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_binarizada', true, BW);
 
 %% FASE 3: IDENTIFICACIÓN Y CONTEO
 % etiquetar colonias circulares
@@ -215,8 +173,8 @@ fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), co
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
 %figure(i + 5);
-imshow(I_segmentada);
-Etiquetado = I_segmentada;
+imshow(Im_color);
+Etiquetado = Im_color;
 hold on; % Permite dibujar sobre la imagen
 
 areas_validas = [colonias_finales.Area];
@@ -259,7 +217,7 @@ title(['Detectados: ' num2str(conteo_total) ' círculos (' num2str(length(coloni
 individuales = sum([colonias_finales.Area] <= umbral);
 superpuestos = sum([colonias_finales.Area] > umbral);
 area_promedio = mean([colonias_finales.Area]);
-densidad = conteo_total / (size(I_segmentada,1) * size(I_segmentada,2)) * 100000;
+densidad = conteo_total / (size(Im_color,1) * size(Im_color,2)) * 100000;
 
 % Cuadro de estadisticas 
 stats_text = sprintf(['Objetos: %d | Individuales: %d | Superpuestos: %d\n' ...
@@ -274,7 +232,7 @@ text(15, 90, stats_text, 'BackgroundColor', [0.95 0.98 1], 'EdgeColor', [0.3 0.5
 hold off; % Termina el modo de dibujo sobre imagen
 
 % Guarda la imagen final con análisis
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '05_Resultado', false, Etiquetado);
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '_Resultado', false, Im_color);
 
 %Mensaje final y limpieza
 fprintf('\nProcesadas %d imágenes\n', length(archivos));
