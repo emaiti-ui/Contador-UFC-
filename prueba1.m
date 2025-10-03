@@ -15,7 +15,7 @@ if isequal(archivos, 0), disp('No se seleccionaron archivos');return; end
 if ~iscell(archivos), archivos = {archivos}; end
 
 %Pregunta al ausuario si desea guardar las figuras
-respuesta = questdlg('¿Deseas guardar las figuras?', 'Guardar figuras', 'Sí', 'No');
+respuesta = questdlg('¿Deseas guardar las figuras?', 'Guardar figuras', 'Sí', 'No', 'No');
 guardar_figuras = strcmp(respuesta, 'Sí');
 
 %Crea carpeta de resultados si se eligio guardar
