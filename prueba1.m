@@ -1,4 +1,4 @@
-clear all;close all;clc
+clear all;close all;clc;
 
 %% FASE INICIAL O 0: LECTURA DE IMAGENES
 
@@ -24,7 +24,6 @@ if guardar_figuras
     if ~exist(carpeta_resultados, 'dir'), mkdir(carpeta_resultados); end
 end
 
-%Funcion auxiliar para guardar figuras o imagenes
 function guardarFigura(guardar, carpeta, nombre, sufijo, es_binaria, matriz)
     if guardar
         if es_binaria
@@ -63,48 +62,16 @@ for i=1:100
         contador = contador +1;
     end
 end
-promedio = promedio/contador % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
+promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
 
 %si la imagen es de la primer base de datos se ejecuta esta parte
 
-if (promedio < 100)
-    centro_x = n/2;
-    centro_y = m/2;
-    radio = centro_y*0.83;
-
-    for y=1:m
-        for x=1:n
-            distancia = sqrt((centro_x-x)^2 + (centro_y-y)^2);
-
-            if distancia > radio
-                Mask(y,x) = 0;
-            end
-        end
-    end
- %   figure(2)
- %       imshow(Mask)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '02_mascara', true, Mask);
-    for y=1:m
-        for x=1:n
-            Im_gris(y,x) = Im_gris(y,x)*Mask(y,x);
-        end
-    end
-%   figure(3)
- %       imshow(Im_gris)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_grises', true, Im_gris);
-    Im_gris2 = medfilt2(Im_gris,[7 7]);
-    BW = imbinarize(Im_gris2,0.75);
-
-%    figure(4)
-%        imshow(BW)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_Binarizada', true, BW);
-
 % si la imagen es de la otra base de datos se ejecuta esta parte
-else
+%else
     for y=1:m
         for x=1:n
-            if Im_gris(y,x) < 150
-                Im_gris(y,x) = 200;
+            if Im_gris(y,x) < 140
+                Im_gris(y,x) = 160;
             end
         end
     end
@@ -116,17 +83,18 @@ guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_negativo', t
     Im_gris2 = medfilt2(Im_gris,[7 7]);
 
     if promedio > 160
-        BW = imbinarize(Im_gris2,0.3);  %Para imagen prueba2.jpg
+        BW = imbinarize(Im_gris2,0.3);  
     else
-        BW = imbinarize(Im_gris2,0.36);  %Para imagen prueba3.jpg
+        umb = graythresh(Im_gris2)*1.2;
+        BW = imbinarize(Im_gris2,umb);  
     end
-    se = strel('disk',21);
+    se = strel('disk',8);
     BW = imopen(BW,se);
     BW = imclose(BW,se);
     BW = imfill(BW,'holes');
 %    figure(3)
 %    imshow(BW)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_Binarizada', true, BW);
+guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '04_Binarizada', true, BW);
 end
 
 %% FASE 3: IDENTIFICACIÓN Y CONTEO
@@ -139,7 +107,8 @@ stats = regionprops(colonias, 'Area', 'Centroid', 'Perimeter');
 
 % Análisis básico automático
 areas = [stats.Area]; % Extrae todas las áreas en un vector
-if isempty(areas), fprintf('No hay objetos\n'); continue; end
+if isempty(areas), fprintf('No hay objetos\n'); %continue; 
+end
 
 % Filtros automáticos simples
 area_promedio = mean(areas);
@@ -155,7 +124,11 @@ areas_ok = [colonias_finales.Area]; % Áreas de colonias válidas
 
 % Encontrar tamaño de colonia individual (más simple)
 areas_ordenadas = sort(areas_ok);
-colonia_individual = areas_ordenadas(round(length(areas_ordenadas)*0.15)); % 30% más pequeña
+%colonia_individual = areas_ordenadas(round(length(areas_ordenadas)*0.15)); % 30% más pequeña
+if ~isempty(areas_ordenadas)
+    idx = max(1, round(length(areas_ordenadas) * 0.15)); % garantiza índice válido (>=1)
+    colonia_individual = areas_ordenadas(idx);
+end
 
 % Contar círculos
 % Si un objeto es mucho más grande que una colonia individual, probablemente contiene múltiples colonias
@@ -169,8 +142,6 @@ for i = 1:length(areas_ok)
     end
     conteo_total = conteo_total + num_circulos;
 end
-
-fprintf('Detectados: %d objetos -> %d círculos\n', length(colonias_finales), conteo_total);
 
 %% FASE 4: ETIQUETADO
 % Mostrar imagen con etiquetas
@@ -242,6 +213,7 @@ if guardar_figuras
     fprintf('Todas las figuras guardadas en: %s\n', carpeta_resultados);
 end
 
-end % Fin del bucle principal de procesamiento
+%end
+% Fin del bucle principal de procesamiento
 fprintf('Gracias por usar el analizador de colonias!\n');
 %thank you!
