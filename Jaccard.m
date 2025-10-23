@@ -31,46 +31,57 @@ similarity = jaccard(BW1_logical,BW2_logical);
 similarity1 = ajustarJaccard(similarity);
 disp(['Índice de Jaccard: ', num2str(similarity1)]);
 
-figure
-imshowpair(BW1_logical, BW2_logical)
-title(['Jaccard Index = ' num2str(similarity1)])
 
-% Crear carpeta para guardar resultados
-carpeta_resultados = 'Resultados_Jaccard';
-if ~exist(carpeta_resultados, 'dir')
-    mkdir(carpeta_resultados);
-    disp(['Carpeta creada: ', carpeta_resultados]);
-end
 
-[~, nombre1, ~] = fileparts(filename1);
-[~, nombre2, ~] = fileparts(filename2);
-nombre_unico = sprintf('Jaccard_%s_vs_%s.png', nombre1, nombre2);
-ruta_completa = fullfile(carpeta_resultados, nombre_unico);
-saveas(gcf, ruta_completa);
-disp(['Imagen guardada en: ', ruta_completa]);
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Función auxiliar: ajusta el valor del índice de Jaccard
+
+%figure
+% Calcular bordes de las regiones detectadas
+%bordes_detectados = bwperim(BW1_logical);
+% Mostrar la imagen base
+%imshow(BW2_logical); 
+%hold on;
+% Superponer los bordes en color verde
+%visboundaries(bordes_detectados, 'Color', 'g', 'LineWidth', 1);
+% Si además ya dibujas tus contornos magenta, mantenlos
+%visboundaries(BW_referencia, 'Color', 'm', 'LineWidth', 1);
+%title(['Jaccard Index = ' num2str(similarity1)])
+
+% Crear carpeta para guardar resultados
+%carpeta_resultados = 'Resultados_Jaccard';
+%if ~exist(carpeta_resultados, 'dir')
+%    mkdir(carpeta_resultados);
+%    disp(['Carpeta creada: ', carpeta_resultados]);
+%end
+%[~, nombre1, ~] = fileparts(filename1);
+%[~, nombre2, ~] = fileparts(filename2);
+%nombre_unico = sprintf('Jaccard_%s_vs_%s.png', nombre1, nombre2);
+%ruta_completa = fullfile(carpeta_resultados, nombre_unico);
+%saveas(gcf, ruta_completa);
+%disp(['Imagen guardada en: ', ruta_completa]);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function valor_final = ajustarJaccard(valor_original)
     % Asegurar que sea numérico
     if ~isnumeric(valor_original)
         error('El valor debe ser numérico');
     end
-
     valor_ajustado = valor_original;
-
     % Multiplicar por 10 hasta que haya un decimal distinto de 0
     % o hasta un límite de 5 iteraciones para evitar bucles infinitos
     contador = 0;
     while contador < 5
         texto = num2str(valor_ajustado, '%.10f');
-        punto = strfind(texto, '.');
-        
+        punto = strfind(texto, '.');      
         if isempty(punto)
             break;
-        end
-        
+        end        
         primer_decimal = texto(punto + 1);
         
         if primer_decimal == '0'
@@ -80,7 +91,6 @@ function valor_final = ajustarJaccard(valor_original)
             break;
         end
     end
-
     % Redondear a 2 decimales
     valor_final = round(valor_ajustado, 2);
 end
