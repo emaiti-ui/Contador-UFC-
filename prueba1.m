@@ -1,4 +1,4 @@
-clear all;close all;clc;
+clear;close all;clc;
 
 %% FASE INICIAL O 0: LECTURA DE IMAGENES
 
@@ -45,7 +45,7 @@ for i = 1:length(archivos)
 %Lee imagen a color y obtiene sus dimensiones
 Im_color = imread(fullfile(ruta, archivos{i}));
 
-[m n c] = size(Im_color)
+[m, n, c] = size(Im_color);
 Mask = ones(m,n);
 
 Im_gris = rgb2gray(Im_color);
@@ -64,14 +64,13 @@ for i=1:100
 end
 promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
 
-%si la imagen es de la primer base de datos se ejecuta esta parte
 
 % si la imagen es de la otra base de datos se ejecuta esta parte
 %else
     for y=1:m
         for x=1:n
-            if Im_gris(y,x) < 140
-                Im_gris(y,x) = 160;
+            if Im_gris(y,x) < 140              
+               Im_gris(y,x) = 170; %cambiar ambos segun criterio
             end
         end
     end
@@ -79,16 +78,16 @@ promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 20
     Im_gris = imcomplement(Im_gris);
  %   figure(2)
  %       imshow(Im_gris)
-guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_negativo', true, Im_gris);    
+    guardarFigura(guardar_figuras, carpeta_resultados, nombre_base, '03_negativo', true, Im_gris);    
     Im_gris2 = medfilt2(Im_gris,[7 7]);
 
     if promedio > 160
-        BW = imbinarize(Im_gris2,0.3);  
+        BW = imbinarize(Im_gris2,0.32);  %cambiar solo si al inicio sobrepasa 160
     else
-        umb = graythresh(Im_gris2)*1.2;
+        umb = graythresh(Im_gris2)*1.14; %cambiar por ajustes 
         BW = imbinarize(Im_gris2,umb);  
     end
-    se = strel('disk',8);
+    se = strel('disk',8); %cambiar si se quiere algo mas exacto
     BW = imopen(BW,se);
     BW = imclose(BW,se);
     BW = imfill(BW,'holes');
