@@ -31,15 +31,7 @@ similarity = jaccard(BW1_logical,BW2_logical);
 similarity1 = ajustarJaccard(similarity);
 disp(['Índice de Jaccard: ', num2str(similarity1)]);
 
-
-
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %figure
 % Calcular bordes de las regiones detectadas
@@ -52,8 +44,7 @@ disp(['Índice de Jaccard: ', num2str(similarity1)]);
 % Si además ya dibujas tus contornos magenta, mantenlos
 %visboundaries(BW_referencia, 'Color', 'm', 'LineWidth', 1);
 %title(['Jaccard Index = ' num2str(similarity1)])
-
-% Crear carpeta para guardar resultados
+%Crear carpeta para guardar resultados
 %carpeta_resultados = 'Resultados_Jaccard';
 %if ~exist(carpeta_resultados, 'dir')
 %    mkdir(carpeta_resultados);
