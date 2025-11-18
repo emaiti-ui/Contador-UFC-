@@ -64,7 +64,7 @@ for i=1:100
 end
 promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 200 y para prueba 3 es de 120.
 
-
+%% FASE 2: BINARIZACIÓN
 % si la imagen es de la otra base de datos se ejecuta esta parte
 %else
     for y=1:m
