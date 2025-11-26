@@ -201,7 +201,7 @@ if guardar_excel
     
     writecell(nueva_fila, nombre_excel, 'Sheet', 1, 'Range', sprintf('A%d', fila_actual));
     
-    fprintf('✓ Resultados guardados en: %s (Fila %d)\n\n', nombre_excel, fila_actual);
+    fprintf('Resultados guardados en: %s (Fila %d)\n\n', nombre_excel, fila_actual);
 end
 
 %% VISUALIZACIÓN

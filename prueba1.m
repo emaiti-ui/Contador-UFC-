@@ -70,7 +70,7 @@ promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 20
     for y=1:m
         for x=1:n
             if Im_gris(y,x) < 140              
-               Im_gris(y,x) = 170; %cambiar ambos segun criterio
+               Im_gris(y,x) = 180; %cambiar ambos segun criterio
             end
         end
     end
@@ -84,10 +84,10 @@ promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 20
     if promedio > 160
         BW = imbinarize(Im_gris2,0.32);  %cambiar solo si al inicio sobrepasa 160
     else
-        umb = graythresh(Im_gris2)*1.14; %cambiar por ajustes 
+        umb = graythresh(Im_gris2)*1.2; %cambiar por ajustes 
         BW = imbinarize(Im_gris2,umb);  
     end
-    se = strel('disk',8); %cambiar si se quiere algo mas exacto
+    se = strel('disk',15); %cambiar si se quiere algo mas exacto
     BW = imopen(BW,se);
     BW = imclose(BW,se);
     BW = imfill(BW,'holes');
