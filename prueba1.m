@@ -69,7 +69,7 @@ promedio = promedio/contador; % el fondo en imagenes como prueba3 es de aprox 20
 %else
     for y=1:m
         for x=1:n
-            if Im_gris(y,x) < 140              
+            if Im_gris(y,x) < 140  %cambiar ambos segun criterio            
                Im_gris(y,x) = 180; %cambiar ambos segun criterio
             end
         end
