@@ -5,7 +5,7 @@ Este proyecto está diseñado para el área de microbiología, con el fin de aut
 
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2020b+-orange.svg)](https://www.mathworks.com/products/matlab.html)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
-[![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow.svg)]()
+[![Estado](https://img.shields.io/badge/Estado-Terminado%20%7C%20Abierto%20a%20mejoras-success.svg)]()
 
 
 ## 🛠️ Requisitos
